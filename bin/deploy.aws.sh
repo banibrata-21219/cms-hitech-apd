@@ -1,3 +1,5 @@
+# Create PM2 ecosystem file using CI/CD environment and inject it into
+# EC2 run-instances user data file
 ECOSYSTEM=`echo "module.exports = {
   apps : [{
     name: 'eAPD API',
@@ -16,6 +18,7 @@ ECOSYSTEM=`echo "module.exports = {
 
 sed -i'.backup' -e "s/__ECOSYSTEM__/`echo $ECOSYSTEM`/g" deploy.aws.user-data.sh
 
+# Create new EC2 instance
  aws ec2 \
   --profile mfa \
   run-instances \
@@ -27,3 +30,11 @@ sed -i'.backup' -e "s/__ECOSYSTEM__/`echo $ECOSYSTEM`/g" deploy.aws.user-data.sh
   --ebs-optimized \
   --tag-specification "ResourceType=instance,Tags=[{Key=Name,Value=eapd-staging-auto}]" \
   --user-data file://deploy.aws.user-data.sh
+
+# ...add instance to target group...
+
+# ...wait for instance to become ready...
+
+# ...remove old instance from target group...
+
+# ...terminate old instance...
