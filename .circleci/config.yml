@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@1.0.0
+
 jobs:
   prepare dependencies cache:
     docker:
@@ -205,6 +209,29 @@ jobs:
           working_directory: ~/project/api
           command: mv endpoint-data.json endpoint-tests && node endpoint-tests/endpoint-coverage.js
 
+  deploy prod frontend:
+    docker:
+      - image: node:10
+    working_directory: ~/project/web
+    steps:
+      - checkout
+      - restore_cache:
+          key: cms-hitech-apd-npm-{{ checksum "web/package-lock.json" }}-{{ checksum "api/package-lock.json" }}
+      - run:
+          name: build the web app
+          command: API_URL=$PROD_API_URL npm run build
+      - run:
+          name: create build artifact zip
+          command: zip -r /tmp/webapp.zip dist/*
+      - aws-s3/sync:
+          from: dist
+          to: 's3://$STAGING_S3_BUCKET'
+          arguments: |
+            --delete
+      - store_artifacts:
+          path: /tmp/webapp.zip
+          destination: build
+
   deploy staging:
     docker:
       - image: node:10
@@ -287,6 +314,10 @@ workflows:
           requires:
             - web dependency vulnerability scan
             - yaml test
+      - deploy prod frontend:
+          requires:
+            - web test
+            - web dependency vulnerability scan
       - deploy staging:
           filters:
             branches:
