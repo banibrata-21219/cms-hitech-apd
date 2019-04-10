@@ -223,7 +223,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - ~/project/web/dist
+            - web/dist
 
   deploy prod frontend:
     docker:
