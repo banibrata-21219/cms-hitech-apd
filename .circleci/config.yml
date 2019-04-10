@@ -212,19 +212,19 @@ jobs:
   deploy prod frontend:
     docker:
       - image: node:10
-    working_directory: ~/project/web
     steps:
       - checkout
       - restore_cache:
           key: cms-hitech-apd-npm-{{ checksum "web/package-lock.json" }}-{{ checksum "api/package-lock.json" }}
       - run:
           name: build the web app
+          working_directory: ~/project/web
           command: API_URL=$PROD_API_URL npm run build
       - run:
           name: create build artifact zip
-          command: zip -r /tmp/webapp.zip dist/*
+          command: zip -r /tmp/webapp.zip web/dist/*
       - aws-s3/sync:
-          from: dist
+          from: web/dist
           to: 's3://$STAGING_S3_BUCKET'
           arguments: |
             --delete
