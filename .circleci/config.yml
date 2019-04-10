@@ -230,15 +230,15 @@ jobs:
       - image: python:3
     steps:
       - attach_workspace:
-          at: /tmp
+          at: ~/project
       - run:
           name: create build artifact zip
           command: |
             apt-get update
             apt-get install zip -y
-            zip -r /tmp/webapp.zip /tmp/dist/*
+            zip -r /tmp/webapp.zip web/dist/*
       - aws-s3/sync:
-          from: /tmp/dist
+          from: web/dist
           to: 's3://$STAGING_S3_BUCKET'
           arguments: |
             --delete
