@@ -215,7 +215,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cms-hitech-apd-npm-{{ checksum "web/package-lock.json" }}-{{ checksum "api/package-lock.json" }}
+          key: v1-cms-hitech-apd-{{ checksum "web/package-lock.json" }}
       - run:
           name: build the web app
           working_directory: ~/project/web
