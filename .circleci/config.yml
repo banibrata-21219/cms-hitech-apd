@@ -232,6 +232,14 @@ jobs:
           path: /tmp/webapp.zip
           destination: build
 
+  deploy prod backend:
+    docker:
+      - image: node:10
+    steps:
+      - run:
+          name: 'noop'
+          command: 'true'
+
   deploy staging:
     docker:
       - image: node:10
