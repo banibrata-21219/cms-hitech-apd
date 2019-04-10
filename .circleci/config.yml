@@ -221,7 +221,7 @@ jobs:
           working_directory: ~/project/web
           command: API_URL=$PROD_API_URL npm run build
       - persist_to_workspace:
-          root: .
+          root: ~/project
           paths:
             - web/dist
 
