@@ -209,7 +209,7 @@ jobs:
           working_directory: ~/project/api
           command: mv endpoint-data.json endpoint-tests && node endpoint-tests/endpoint-coverage.js
 
-  deploy prod frontend:
+  build frontend:
     docker:
       - image: node:10
     steps:
@@ -220,14 +220,25 @@ jobs:
           name: build the web app
           working_directory: ~/project/web
           command: API_URL=$PROD_API_URL npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ~/project/web/dist
+
+  deploy prod frontend:
+    docker:
+      - image: python:3
+    steps:
+      - attach_workspace:
+          at: /tmp
       - run:
           name: create build artifact zip
           command: |
             apt-get update
             apt-get install zip -y
-            zip -r /tmp/webapp.zip web/dist/*
+            zip -r /tmp/webapp.zip /tmp/dist/*
       - aws-s3/sync:
-          from: web/dist
+          from: /tmp/dist
           to: 's3://$STAGING_S3_BUCKET'
           arguments: |
             --delete
@@ -325,9 +336,12 @@ workflows:
       #     requires:
       #       - web dependency vulnerability scan
       #       - yaml test
-      - deploy prod frontend:
+      - build frontend:
           requires:
             - prepare dependencies cache
+      - deploy prod frontend:
+          requires:
+            - build frontend
             # - web test
             # - web dependency vulnerability scan
       # - deploy staging:
